@@ -1,4 +1,4 @@
-name: Build Kivy AAB (FINAL STABLE)
+name: Build Android AAB (python-for-android)
 
 on:
   workflow_dispatch:
@@ -10,45 +10,36 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    # -------------------
-    # Checkout
-    # -------------------
-    - uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v4
 
-    # -------------------
-    # System deps
-    # -------------------
     - name: Install dependencies
       run: |
         sudo apt update
         sudo apt install -y \
         python3-pip git zip unzip openjdk-17-jdk \
-        autoconf libtool pkg-config \
-        zlib1g-dev libncurses5-dev libffi-dev cmake
+        build-essential autoconf libtool pkg-config \
+        zlib1g-dev libffi-dev libssl-dev cmake
 
-    # -------------------
-    # Buildozer install
-    # -------------------
-    - name: Install Buildozer
+    - name: Install python-for-android
       run: |
         pip install --upgrade pip
-        pip install buildozer cython==0.29.36
+        pip install cython==0.29.36 python-for-android buildozer
 
-    # -------------------
-    # FIX LICENSES + BUILD
-    # -------------------
-    - name: Build AAB
+    - name: Initialize buildozer
       run: |
-        export CI=1
-        export BUILDOZER_ALLOW_ROOT=1
+        buildozer init || true
 
-        yes | buildozer android clean
-        yes | buildozer android release
+    - name: Build APK (stable p4a mode)
+      run: |
+        buildozer android debug
 
-    # -------------------
-    # Upload AAB
-    # -------------------
-    - uses: actions/upload-artifact@v4
+    - name: Build Release AAB
+      run: |
+        buildozer android release
+
+    - name: Upload AAB
+      uses: actions/upload-artifact@v4
       with:
         name: snake-aab
         path: bin/*.aab
