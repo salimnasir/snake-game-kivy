@@ -1,4 +1,4 @@
-name: Build Kivy Android AAB (Stable)
+name: Build Kivy AAB (FINAL STABLE)
 
 on:
   workflow_dispatch:
@@ -10,72 +10,45 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    # ----------------------------
-    # 1. Checkout code
-    # ----------------------------
-    - name: Checkout repository
-      uses: actions/checkout@v4
+    # -------------------
+    # Checkout
+    # -------------------
+    - uses: actions/checkout@v4
 
-    # ----------------------------
-    # 2. Install system dependencies
-    # ----------------------------
+    # -------------------
+    # System deps
+    # -------------------
     - name: Install dependencies
       run: |
         sudo apt update
         sudo apt install -y \
         python3-pip git zip unzip openjdk-17-jdk \
         autoconf libtool pkg-config \
-        zlib1g-dev libncurses5-dev libncursesw5-dev \
-        libffi-dev libssl-dev cmake
+        zlib1g-dev libncurses5-dev libffi-dev cmake
 
-    # ----------------------------
-    # 3. Install Buildozer
-    # ----------------------------
+    # -------------------
+    # Buildozer install
+    # -------------------
     - name: Install Buildozer
       run: |
         pip install --upgrade pip
         pip install buildozer cython==0.29.36
 
-    # ----------------------------
-    # 4. Install Android SDK (SAFE METHOD)
-    # ----------------------------
-    - name: Setup Android SDK
+    # -------------------
+    # FIX LICENSES + BUILD
+    # -------------------
+    - name: Build AAB
       run: |
-        export ANDROID_SDK_ROOT=$HOME/android-sdk
-        mkdir -p $ANDROID_SDK_ROOT
+        export CI=1
+        export BUILDOZER_ALLOW_ROOT=1
 
-        cd $ANDROID_SDK_ROOT
+        yes | buildozer android clean
+        yes | buildozer android release
 
-        wget https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
-        unzip -q commandlinetools-linux-*.zip -d cmdline-tools-temp
-
-        mkdir -p cmdline-tools/latest
-        mv cmdline-tools-temp/cmdline-tools/* cmdline-tools/latest/
-
-        export PATH=$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$PATH
-
-        yes | sdkmanager --licenses || true
-
-        sdkmanager \
-          "platform-tools" \
-          "platforms;android-34" \
-          "build-tools;34.0.0"
-
-    # ----------------------------
-    # 5. Build AAB
-    # ----------------------------
-    - name: Build Android AAB
-      run: |
-        export ANDROID_SDK_ROOT=$HOME/android-sdk
-        export PATH=$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$PATH
-
-        buildozer -v android release
-
-    # ----------------------------
-    # 6. Upload AAB file
-    # ----------------------------
-    - name: Upload AAB artifact
-      uses: actions/upload-artifact@v4
+    # -------------------
+    # Upload AAB
+    # -------------------
+    - uses: actions/upload-artifact@v4
       with:
         name: snake-aab
         path: bin/*.aab
