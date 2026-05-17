@@ -1,4 +1,4 @@
-name: Build Kivy Android AAB
+name: Build Kivy AAB
 
 on:
   workflow_dispatch:
@@ -13,13 +13,17 @@ jobs:
       image: kivy/buildozer:latest
 
     steps:
-    - name: Checkout code
+    - name: Checkout repo
       uses: actions/checkout@v4
 
-    - name: Build AAB
+    - name: Force non-interactive mode
       run: |
-        buildozer android clean
-        buildozer -v android release
+        export BUILDOZER_ALLOW_ROOT=1
+        export CI=1
+
+    - name: Build AAB (no prompts)
+      run: |
+        buildozer -v android release --ignore-root-warning
 
     - name: Upload AAB
       uses: actions/upload-artifact@v4
