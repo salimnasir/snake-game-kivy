@@ -20,6 +20,7 @@ android.archs = arm64-v8a
 
 android.enable_androidx = True
 android.ndk_version = 25b
+android.build_tools_version = 34.0.0
 
 android.release_artifact = aab
 
