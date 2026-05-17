@@ -1,4 +1,4 @@
-name: Build Android AAB (python-for-android)
+name: Build Snake Game AAB (Stable Final)
 
 on:
   workflow_dispatch:
@@ -10,35 +10,54 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
+    # ---------------------------
+    # 1. Checkout code
+    # ---------------------------
+    - name: Checkout repository
       uses: actions/checkout@v4
 
+    # ---------------------------
+    # 2. Install system dependencies
+    # ---------------------------
     - name: Install dependencies
       run: |
         sudo apt update
         sudo apt install -y \
         python3-pip git zip unzip openjdk-17-jdk \
-        build-essential autoconf libtool pkg-config \
+        autoconf libtool pkg-config \
         zlib1g-dev libffi-dev libssl-dev cmake
 
-    - name: Install python-for-android
+    # ---------------------------
+    # 3. Install Buildozer
+    # ---------------------------
+    - name: Install Buildozer
       run: |
         pip install --upgrade pip
-        pip install cython==0.29.36 python-for-android buildozer
+        pip install buildozer cython==0.29.36
 
-    - name: Initialize buildozer
+    # ---------------------------
+    # 4. ACCEPT LICENSES + UPDATE SDK
+    # ---------------------------
+    - name: Accept Android licenses
       run: |
-        buildozer init || true
+        export CI=1
+        yes | buildozer android update || true
 
-    - name: Build APK (stable p4a mode)
+    # ---------------------------
+    # 5. BUILD AAB
+    # ---------------------------
+    - name: Build AAB
       run: |
-        buildozer android debug
+        export CI=1
+        export BUILDOZER_ALLOW_ROOT=1
 
-    - name: Build Release AAB
-      run: |
-        buildozer android release
+        yes | buildozer android update
+        yes | buildozer android release
 
-    - name: Upload AAB
+    # ---------------------------
+    # 6. Upload AAB
+    # ---------------------------
+    - name: Upload AAB artifact
       uses: actions/upload-artifact@v4
       with:
         name: snake-aab
