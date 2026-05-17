@@ -1,4 +1,4 @@
-name: Build Kivy Android AAB
+name: Build Kivy AAB (Stable Android SDK Fix)
 
 on:
   workflow_dispatch:
@@ -10,36 +10,46 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
+    - name: Checkout repo
       uses: actions/checkout@v4
 
-    - name: Setup Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.10'
+    - name: Install system dependencies
+      run: |
+        sudo apt update
+        sudo apt install -y \
+        git zip unzip openjdk-17-jdk \
+        python3-pip autoconf libtool pkg-config \
+        zlib1g-dev libncurses5-dev libncursesw5-dev \
+        cmake libffi-dev libssl-dev wget
 
     - name: Install Buildozer
       run: |
-        sudo apt update
-        sudo apt install -y git zip unzip openjdk-17-jdk python3-pip
         pip install --upgrade pip
         pip install buildozer cython==0.29.36
 
-    - name: Install Android dependencies
+    - name: Install Android SDK (FIX AIDL + build-tools)
       run: |
-        sudo apt install -y \
-        autoconf libtool pkg-config zlib1g-dev \
-        libncurses5-dev libncursesw5-dev libtinfo6 cmake \
-        libffi-dev libssl-dev
+        mkdir -p $HOME/android-sdk
+        cd $HOME/android-sdk
 
-    - name: Accept Android licenses
-      run: |
-        yes | sudo apt install -y android-sdk
+        wget https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
+        unzip commandlinetools-linux-*.zip
+
+        mkdir -p cmdline-tools/latest
+        mv cmdline-tools/* cmdline-tools/latest/
+
+        export ANDROID_SDK_ROOT=$HOME/android-sdk
+        export PATH=$PATH:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin
+
+        yes | sdkmanager --licenses
+        sdkmanager "build-tools;33.0.2" "platform-tools" "platforms;android-34"
 
     - name: Build AAB
       run: |
-        buildozer android debug || true
-        buildozer android release
+        export ANDROID_SDK_ROOT=$HOME/android-sdk
+        export PATH=$PATH:$ANDROID_SDK_ROOT/platform-tools
+
+        buildozer -v android release
 
     - name: Upload AAB
       uses: actions/upload-artifact@v4
