@@ -1,4 +1,4 @@
-name: Build Kivy AAB (Fixed Root Issue)
+name: Build Android AAB (Stable)
 
 on:
   workflow_dispatch:
@@ -9,27 +9,20 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    container:
+      image: kivy/buildozer:latest
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Install dependencies
+    - name: Clean build
       run: |
-        sudo apt update
-        sudo apt install -y python3-pip git zip unzip openjdk-17-jdk
-        pip install --upgrade pip
-        pip install cython==0.29.36 buildozer
+        buildozer android clean || true
 
-    - name: Fix Buildozer root issue
+    - name: Build AAB
       run: |
-        export BUILDOZER_ALLOW_ROOT=1
-        export CI=1
-        echo "BUILDOZER_ALLOW_ROOT=1" >> $GITHUB_ENV
-        echo "CI=1" >> $GITHUB_ENV
-
-    - name: Build AAB (forced non-interactive)
-      run: |
-        yes | buildozer android release
+        buildozer -v android release
 
     - name: Upload AAB
       uses: actions/upload-artifact@v4
