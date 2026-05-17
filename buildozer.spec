@@ -16,7 +16,10 @@ fullscreen = 1
 
 android.api = 34
 android.minapi = 21
-android.arch = arm64-v8a
+android.archs = arm64-v8a
+
+android.enable_androidx = True
+android.ndk_version = 25b
 
 android.release_artifact = aab
 
