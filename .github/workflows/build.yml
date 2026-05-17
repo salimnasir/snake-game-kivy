@@ -1,64 +1,83 @@
-name: Build Snake Game AAB (Stable Final)
+name: Build Snake Game AAB
 
 on:
   workflow_dispatch:
   push:
-    branches: [ main ]
+    branches:
+      - main
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-    # ---------------------------
-    # 1. Checkout code
-    # ---------------------------
-    - name: Checkout repository
-      uses: actions/checkout@v4
+      # --------------------------------
+      # Checkout Repository
+      # --------------------------------
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    # ---------------------------
-    # 2. Install system dependencies
-    # ---------------------------
-    - name: Install dependencies
-      run: |
-        sudo apt update
-        sudo apt install -y \
-        python3-pip git zip unzip openjdk-17-jdk \
-        autoconf libtool pkg-config \
-        zlib1g-dev libffi-dev libssl-dev cmake
+      # --------------------------------
+      # Install System Dependencies
+      # --------------------------------
+      - name: Install dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y \
+            python3-pip \
+            git \
+            zip \
+            unzip \
+            openjdk-17-jdk \
+            autoconf \
+            libtool \
+            pkg-config \
+            zlib1g-dev \
+            libffi-dev \
+            libssl-dev \
+            cmake
 
-    # ---------------------------
-    # 3. Install Buildozer
-    # ---------------------------
-    - name: Install Buildozer
-      run: |
-        pip install --upgrade pip
-        pip install buildozer cython==0.29.36
+      # --------------------------------
+      # Install Buildozer
+      # --------------------------------
+      - name: Install Buildozer
+        run: |
+          pip install --upgrade pip
+          pip install buildozer cython==0.29.36
 
-    # ---------------------------
-    # 4. ACCEPT LICENSES + UPDATE SDK
-    # ---------------------------
-    - name: Accept Android licenses
-      run: |
-        export CI=1
-        yes | buildozer android update || true
+      # --------------------------------
+      # Setup Environment
+      # --------------------------------
+      - name: Setup environment
+        run: |
+          export CI=1
+          export BUILDOZER_ALLOW_ROOT=1
 
-    # ---------------------------
-    # 5. BUILD AAB
-    # ---------------------------
-    - name: Build AAB
-      run: |
-        export CI=1
-        export BUILDOZER_ALLOW_ROOT=1
+      # --------------------------------
+      # Android SDK Update
+      # --------------------------------
+      - name: Android update
+        run: |
+          export CI=1
+          export BUILDOZER_ALLOW_ROOT=1
 
-        yes | buildozer android update
-        yes | buildozer android release
+          buildozer android update
 
-    # ---------------------------
-    # 6. Upload AAB
-    # ---------------------------
-    - name: Upload AAB artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: snake-aab
-        path: bin/*.aab
+      # --------------------------------
+      # Build Release AAB
+      # --------------------------------
+      - name: Build Android AAB
+        run: |
+          export CI=1
+          export BUILDOZER_ALLOW_ROOT=1
+
+          buildozer -v android release
+
+      # --------------------------------
+      # Upload AAB Artifact
+      # --------------------------------
+      - name: Upload AAB
+        uses: actions/upload-artifact@v4
+        with:
+          name: snake-aab
+          path: bin/*.aab
