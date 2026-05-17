@@ -1,30 +1,21 @@
 [app]
 
-title = Snake Game
-
+title = SnakeGame
 package.name = snakegame
-
-package.domain = org.test
+package.domain = org.yourname
 
 source.dir = .
-
-source.include_exts = py,png,jpg,kv,atlas
+source.include_exts = py,png,jpg,kv
 
 version = 1.0
 
 requirements = python3,kivy
 
 orientation = portrait
+fullscreen = 1
 
-fullscreen = 0
-
-android.permissions = INTERNET
-
-android.api = 33
-
+android.api = 34
 android.minapi = 21
+android.arch = arm64-v8a
 
-[buildozer]
-
-log_level = 2
-warn_on_root = 1
+android.release_artifact = aab
