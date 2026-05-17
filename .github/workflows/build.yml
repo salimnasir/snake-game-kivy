@@ -1,4 +1,4 @@
-name: Build Android AAB
+name: Build Android AAB (Kivy)
 
 on:
   workflow_dispatch:
@@ -13,22 +13,36 @@ jobs:
     - name: Checkout repo
       uses: actions/checkout@v4
 
-    - name: Install dependencies
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+
+    - name: Install system dependencies
       run: |
         sudo apt update
-        sudo apt install -y python3-pip git zip unzip openjdk-17-jdk
-        pip install --upgrade pip
-        pip install buildozer cython
+        sudo apt install -y \
+        git zip unzip openjdk-17-jdk \
+        python3-pip python3-setuptools \
+        autoconf libtool pkg-config \
+        zlib1g-dev libncurses5-dev libncursesw5-dev \
+        libtinfo6 cmake libffi-dev libssl-dev
 
-    - name: Cache buildozer
-      uses: actions/cache@v3
+    - name: Install Python tools
+      run: |
+        pip install --upgrade pip
+        pip install cython==0.29.36 buildozer
+
+    - name: Cache Buildozer
+      uses: actions/cache@v4
       with:
         path: ~/.buildozer
         key: buildozer-${{ runner.os }}
 
-    - name: Build AAB
+    - name: Build APK/AAB
       run: |
-        buildozer android release
+        buildozer -v android debug || true
+        buildozer -v android release
 
     - name: Upload AAB
       uses: actions/upload-artifact@v4
