@@ -1,4 +1,4 @@
-name: Build Android AAB (Stable)
+name: Build Kivy Android AAB (Final Stable)
 
 on:
   workflow_dispatch:
@@ -13,12 +13,17 @@ jobs:
       image: kivy/buildozer:latest
 
     steps:
-    - name: Checkout code
+    - name: Checkout repo
       uses: actions/checkout@v4
 
-    - name: Clean build
+    - name: Show environment
       run: |
-        buildozer android clean || true
+        python --version
+        buildozer --version
+
+    - name: Clean build folder
+      run: |
+        rm -rf .buildozer || true
 
     - name: Build AAB
       run: |
