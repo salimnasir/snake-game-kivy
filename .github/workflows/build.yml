@@ -12,10 +12,18 @@ jobs:
 
     steps:
       # --------------------------------
-      # Checkout repository
+      # Checkout
       # --------------------------------
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      # --------------------------------
+      # Setup Python 3.11
+      # --------------------------------
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
 
       # --------------------------------
       # Setup Java 17
@@ -27,7 +35,7 @@ jobs:
           java-version: '17'
 
       # --------------------------------
-      # Install dependencies
+      # Install Linux dependencies
       # --------------------------------
       - name: Install dependencies
         run: |
@@ -37,7 +45,6 @@ jobs:
             git \
             zip \
             unzip \
-            python3-pip \
             autoconf \
             libtool \
             pkg-config \
@@ -52,7 +59,7 @@ jobs:
       # --------------------------------
       - name: Install Buildozer
         run: |
-          pip install --upgrade pip
+          python -m pip install --upgrade pip
 
           pip install \
             cython==0.29.36 \
@@ -84,7 +91,7 @@ jobs:
             "build-tools;34.0.0"
 
       # --------------------------------
-      # Build Android AAB
+      # Build AAB
       # --------------------------------
       - name: Build Android AAB
         env:
@@ -95,7 +102,7 @@ jobs:
         run: |
           export PATH=$ANDROID_SDK_ROOT/platform-tools:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$PATH
 
-          buildozer -v android release
+          buildozer android release
 
       # --------------------------------
       # Upload AAB
